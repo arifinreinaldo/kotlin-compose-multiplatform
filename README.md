@@ -2,6 +2,29 @@
 
 A production-ready boilerplate for Kotlin Compose Multiplatform applications with Clean Architecture, SQLite as the single source of truth, and dynamic responsive UI.
 
+## ⚡ Quick Start
+
+**Get running in 5 minutes!** → **[Quick Start Guide](docs/QUICKSTART.md)**
+
+```bash
+# Clone and run
+git clone <your-repo-url>
+cd kotlin-compose-multiplatform
+
+# Android
+./gradlew :androidApp:run
+
+# Desktop
+./gradlew :desktopApp:run
+
+# iOS (macOS only)
+open iosApp/iosApp.xcworkspace
+```
+
+**Want to see sample pages?** Replace `App()` with `SampleApp()` to see Login, User List, and Form examples!
+
+---
+
 ## 🏗️ Architecture
 
 This project follows **Clean Architecture** principles with clear separation of concerns:
