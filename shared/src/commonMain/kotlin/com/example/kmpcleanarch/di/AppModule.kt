@@ -1,14 +1,19 @@
 package com.example.kmpcleanarch.di
 
 import com.example.kmpcleanarch.data.local.DatabaseDriverFactory
+import com.example.kmpcleanarch.data.remote.api.AiApi
+import com.example.kmpcleanarch.data.remote.HttpClientFactory
+import com.example.kmpcleanarch.data.repository.AiRepositoryImpl
 import com.example.kmpcleanarch.data.repository.AuthRepositoryImpl
 import com.example.kmpcleanarch.data.repository.TaskRepositoryImpl
 import com.example.kmpcleanarch.data.repository.UserRepositoryImpl
 import com.example.kmpcleanarch.database.AppDatabase
+import com.example.kmpcleanarch.domain.repository.AiRepository
 import com.example.kmpcleanarch.domain.repository.AuthRepository
 import com.example.kmpcleanarch.domain.repository.TaskRepository
 import com.example.kmpcleanarch.domain.repository.UserRepository
 import com.example.kmpcleanarch.domain.usecase.*
+import com.example.kmpcleanarch.presentation.viewmodel.AiChatViewModel
 import com.example.kmpcleanarch.presentation.viewmodel.LoginViewModel
 import com.example.kmpcleanarch.presentation.viewmodel.TaskViewModel
 import com.example.kmpcleanarch.presentation.viewmodel.UserFormViewModel
@@ -24,6 +29,20 @@ import org.koin.dsl.module
  * Defines all dependencies for the application
  */
 val commonModule = module {
+    // HTTP Client for AI API
+    single {
+        HttpClientFactory.create(enableLogging = true)
+    }
+
+    // AI API (default configuration - update with your API key)
+    single {
+        AiApi(
+            httpClient = get(),
+            baseUrl = AiApi.OPENAI_BASE_URL,
+            apiKey = "" // Set via AiChatViewModel.setApiKey()
+        )
+    }
+
     // Database
     single {
         val driver = get<DatabaseDriverFactory>().createDriver()
@@ -34,6 +53,7 @@ val commonModule = module {
     singleOf(::TaskRepositoryImpl) bind TaskRepository::class
     singleOf(::AuthRepositoryImpl) bind AuthRepository::class
     singleOf(::UserRepositoryImpl) bind UserRepository::class
+    singleOf(::AiRepositoryImpl) bind AiRepository::class
 
     // Task Use Cases
     factoryOf(::GetAllTasksUseCase)
@@ -50,11 +70,16 @@ val commonModule = module {
     factoryOf(::SaveUserUseCase)
     factoryOf(::DeleteUserUseCase)
 
+    // AI Use Cases
+    factoryOf(::SendAiMessageUseCase)
+    factoryOf(::GetAvailableAiModelsUseCase)
+
     // ViewModels
     factoryOf(::TaskViewModel)
     factoryOf(::LoginViewModel)
     factoryOf(::UserListViewModel)
     factoryOf(::UserFormViewModel)
+    factoryOf(::AiChatViewModel)
 }
 
 /**
