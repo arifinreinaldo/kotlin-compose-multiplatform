@@ -167,7 +167,9 @@ Open the project in Xcode and run, or use:
 | **MockK** | Mocking library |
 | **JUnit** | Test runner |
 
-## 📝 Example Implementation
+## 📝 Example Implementations
+
+### Task Management App (Default)
 
 The boilerplate includes a fully functional **Task Management** app demonstrating:
 
@@ -176,6 +178,25 @@ The boilerplate includes a fully functional **Task Management** app demonstratin
 3. **State Management**: Centralized state with ViewModels
 4. **Responsive Design**: Adapts to different screen sizes
 5. **Error Handling**: User-friendly error messages
+
+### Sample Pages (Login, List, Form) 🆕
+
+Additionally, comprehensive sample pages are included showing:
+
+1. **Login Screen** - User authentication with validation
+2. **User List Screen** - Display list data with search/filter
+3. **User Form Screen** - Create/edit form with validation
+
+**To enable sample pages:** Replace `App()` with `SampleApp()` in your platform entry points.
+
+**Demo Credentials:** Email: `any@example.com`, Password: `password123`
+
+See **[docs/SAMPLE_PAGES.md](docs/SAMPLE_PAGES.md)** for complete documentation including:
+- How to enable sample pages
+- Architecture implementation details
+- Navigation flow
+- Customization guide
+- Backend integration examples
 
 ## 🧪 Testing
 
@@ -305,6 +326,15 @@ Comprehensive guides are available in the `docs/` directory:
   - Data flow patterns
   - Dependency rules
   - Common patterns and best practices
+
+### Sample Pages & Examples
+- **[SAMPLE_PAGES.md](docs/SAMPLE_PAGES.md)** - Complete sample pages guide 🆕
+  - Login screen with authentication
+  - User list with search/filter
+  - User form (create/edit)
+  - Navigation flow
+  - Customization guide
+  - Backend integration examples
 
 ### Extension Guides
 - **[EXTENDING.md](docs/EXTENDING.md)** - How to extend the boilerplate
