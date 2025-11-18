@@ -221,13 +221,40 @@ See **[docs/SAMPLE_PAGES.md](docs/SAMPLE_PAGES.md)** for complete documentation 
 - Customization guide
 - Backend integration examples
 
-## 🧪 Testing
+## 🧪 Testing & CI/CD
 
-The architecture is designed for easy testing:
+### Comprehensive Testing Suite
 
-- **Domain Layer**: Pure Kotlin, easy to unit test
-- **Data Layer**: Test repository implementations with fake drivers
-- **Presentation Layer**: Test ViewModels with fake use cases
+The project includes a complete testing suite with real test examples:
+
+- **Domain Layer Tests**: Use case validation, business logic (SendAiMessageUseCaseTest, LoginUseCaseTest, TaskUseCaseTests)
+- **Presentation Layer Tests**: ViewModel testing with Turbine for Flow testing (AiChatViewModelTest)
+- **Fake Repositories**: Test doubles for isolated unit testing
+- **Coroutine Testing**: Using kotlinx-coroutines-test for async operations
+
+```bash
+# Run all tests
+./gradlew test
+
+# Run with coverage
+./gradlew test jacocoTestReport
+```
+
+### CI/CD Pipeline
+
+GitHub Actions workflows are configured for:
+
+- ✅ **Automated Testing** - All tests run on every PR
+- ✅ **Multi-Platform Builds** - Android, iOS, Desktop (Linux, Windows, macOS)
+- ✅ **Code Quality** - Detekt linting and static analysis
+- ✅ **Automated Releases** - Tag-based releases with artifacts
+- ✅ **Artifact Management** - APKs, installers uploaded to releases
+
+**See [docs/CICD.md](docs/CICD.md)** for complete CI/CD documentation including:
+- Workflow configurations
+- Running tests locally
+- Creating releases
+- Troubleshooting CI issues
 
 ## 🔄 Extending the Boilerplate
 
@@ -368,13 +395,19 @@ Comprehensive guides are available in the `docs/` directory:
   - Adding analytics
   - Complete example: Notes feature
 
-### Testing
+### Testing & CI/CD
 - **[TESTING.md](docs/TESTING.md)** - Complete testing guide
   - Testing strategy for each layer
   - Testing tools and utilities
   - Example tests for domain, data, and presentation layers
   - Best practices and patterns
-  - CI/CD integration
+- **[CICD.md](docs/CICD.md)** - CI/CD and automation guide 🆕
+  - GitHub Actions workflows
+  - Automated testing pipeline
+  - Multi-platform builds (Android, iOS, Desktop)
+  - Release automation
+  - Running tests locally
+  - Troubleshooting CI issues
 
 ### Quick Reference
 

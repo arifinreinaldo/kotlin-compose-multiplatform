@@ -9,113 +9,169 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/**
- * Example unit test for use case
- * Tests business logic without dependencies on framework or database
- */
 class AddTaskUseCaseTest {
 
     @Test
-    fun `should add task successfully with valid title`() = runTest {
-        // Given
-        val fakeRepository = FakeTaskRepository()
-        val useCase = AddTaskUseCase(fakeRepository)
-        val title = "Test Task"
-        val description = "Test Description"
-
-        // When
-        val result = useCase(title, description)
-
-        // Then
-        assertTrue(result.isSuccess)
-        assertEquals(1, fakeRepository.insertedTasks.size)
-        assertEquals(title, fakeRepository.insertedTasks[0].title)
-        assertEquals(description, fakeRepository.insertedTasks[0].description)
-    }
-
-    @Test
-    fun `should fail when title is empty`() = runTest {
-        // Given
+    fun `should reject empty title`() = runTest {
         val fakeRepository = FakeTaskRepository()
         val useCase = AddTaskUseCase(fakeRepository)
 
-        // When
-        val result = useCase("", "Description")
+        val result = useCase("")
 
-        // Then
         assertTrue(result.isFailure)
-        assertEquals(0, fakeRepository.insertedTasks.size)
+        assertEquals("Task title cannot be empty", result.exceptionOrNull()?.message)
     }
 
     @Test
-    fun `should fail when title is blank`() = runTest {
-        // Given
+    fun `should reject blank title`() = runTest {
         val fakeRepository = FakeTaskRepository()
         val useCase = AddTaskUseCase(fakeRepository)
 
-        // When
-        val result = useCase("   ", "Description")
+        val result = useCase("   ")
 
-        // Then
         assertTrue(result.isFailure)
-        assertEquals(0, fakeRepository.insertedTasks.size)
+        assertEquals("Task title cannot be empty", result.exceptionOrNull()?.message)
     }
 
     @Test
-    fun `should trim whitespace from title and description`() = runTest {
-        // Given
+    fun `should add task successfully`() = runTest {
         val fakeRepository = FakeTaskRepository()
         val useCase = AddTaskUseCase(fakeRepository)
 
-        // When
-        val result = useCase("  Test  ", "  Description  ")
+        val result = useCase("Buy groceries")
 
-        // Then
         assertTrue(result.isSuccess)
-        assertEquals("Test", fakeRepository.insertedTasks[0].title)
-        assertEquals("Description", fakeRepository.insertedTasks[0].description)
+        assertEquals("Buy groceries", fakeRepository.lastTitle)
+    }
+
+    @Test
+    fun `should trim whitespace from title`() = runTest {
+        val fakeRepository = FakeTaskRepository()
+        val useCase = AddTaskUseCase(fakeRepository)
+
+        useCase("  Buy groceries  ")
+
+        assertEquals("Buy groceries", fakeRepository.lastTitle)
+    }
+
+    @Test
+    fun `should propagate repository errors`() = runTest {
+        val fakeRepository = FakeTaskRepository(shouldFail = true)
+        val useCase = AddTaskUseCase(fakeRepository)
+
+        val result = useCase("Buy groceries")
+
+        assertTrue(result.isFailure)
+        assertEquals("Database error", result.exceptionOrNull()?.message)
+    }
+}
+
+class ToggleTaskCompletionUseCaseTest {
+
+    @Test
+    fun `should toggle task completion`() = runTest {
+        val fakeRepository = FakeTaskRepository()
+        val useCase = ToggleTaskCompletionUseCase(fakeRepository)
+
+        val task = Task(id = 1, title = "Test task", isCompleted = false)
+
+        val result = useCase(task)
+
+        assertTrue(result.isSuccess)
+        assertEquals(1L, fakeRepository.lastTaskId)
+        assertTrue(fakeRepository.lastCompletedState!!)
+    }
+
+    @Test
+    fun `should propagate repository errors`() = runTest {
+        val fakeRepository = FakeTaskRepository(shouldFail = true)
+        val useCase = ToggleTaskCompletionUseCase(fakeRepository)
+
+        val task = Task(id = 1, title = "Test task", isCompleted = false)
+
+        val result = useCase(task)
+
+        assertTrue(result.isFailure)
+    }
+}
+
+class DeleteTaskUseCaseTest {
+
+    @Test
+    fun `should delete task successfully`() = runTest {
+        val fakeRepository = FakeTaskRepository()
+        val useCase = DeleteTaskUseCase(fakeRepository)
+
+        val task = Task(id = 1, title = "Test task", isCompleted = false)
+
+        val result = useCase(task)
+
+        assertTrue(result.isSuccess)
+        assertEquals(1L, fakeRepository.lastDeletedTaskId)
+    }
+
+    @Test
+    fun `should propagate repository errors`() = runTest {
+        val fakeRepository = FakeTaskRepository(shouldFail = true)
+        val useCase = DeleteTaskUseCase(fakeRepository)
+
+        val task = Task(id = 1, title = "Test task", isCompleted = false)
+
+        val result = useCase(task)
+
+        assertTrue(result.isFailure)
     }
 }
 
 /**
- * Fake repository for testing
- * No database required, pure in-memory implementation
+ * Fake implementation of TaskRepository for testing
  */
-class FakeTaskRepository : TaskRepository {
-    val insertedTasks = mutableListOf<Task>()
-    val tasks = mutableListOf<Task>()
+class FakeTaskRepository(
+    private val shouldFail: Boolean = false
+) : TaskRepository {
 
-    override fun observeAllTasks(): Flow<List<Task>> = flowOf(tasks)
+    var lastTitle: String? = null
+    var lastTaskId: Long? = null
+    var lastCompletedState: Boolean? = null
+    var lastDeletedTaskId: Long? = null
 
-    override fun observeTaskById(id: Long): Flow<Task?> {
-        return flowOf(tasks.find { it.id == id })
-    }
+    private val tasks = mutableListOf<Task>()
 
-    override suspend fun getAllTasks(): List<Task> = tasks
-
-    override suspend fun getTaskById(id: Long): Task? {
-        return tasks.find { it.id == id }
-    }
-
-    override suspend fun insertTask(task: Task): Long {
-        insertedTasks.add(task)
-        val newTask = task.copy(id = (tasks.maxOfOrNull { it.id } ?: 0) + 1)
-        tasks.add(newTask)
-        return newTask.id
-    }
-
-    override suspend fun updateTask(task: Task) {
-        val index = tasks.indexOfFirst { it.id == task.id }
-        if (index != -1) {
-            tasks[index] = task
+    override suspend fun insertTask(title: String): Result<Unit> {
+        lastTitle = title
+        return if (shouldFail) {
+            Result.failure(Exception("Database error"))
+        } else {
+            tasks.add(Task(id = tasks.size.toLong() + 1, title = title, isCompleted = false))
+            Result.success(Unit)
         }
     }
 
-    override suspend fun deleteTask(id: Long) {
-        tasks.removeIf { it.id == id }
+    override suspend fun updateTaskCompletion(taskId: Long, isCompleted: Boolean): Result<Unit> {
+        lastTaskId = taskId
+        lastCompletedState = isCompleted
+        return if (shouldFail) {
+            Result.failure(Exception("Database error"))
+        } else {
+            Result.success(Unit)
+        }
     }
 
-    override suspend fun deleteAllTasks() {
-        tasks.clear()
+    override suspend fun deleteTask(taskId: Long): Result<Unit> {
+        lastDeletedTaskId = taskId
+        return if (shouldFail) {
+            Result.failure(Exception("Database error"))
+        } else {
+            tasks.removeIf { it.id == taskId }
+            Result.success(Unit)
+        }
+    }
+
+    override fun getAllTasks(): Flow<List<Task>> {
+        return flowOf(tasks)
+    }
+
+    override suspend fun getTaskById(id: Long): Task? {
+        return tasks.find { it.id == id }
     }
 }

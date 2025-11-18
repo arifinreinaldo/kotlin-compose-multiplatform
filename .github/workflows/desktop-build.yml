@@ -1,0 +1,97 @@
+name: Desktop Build
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'shared/**'
+      - 'desktopApp/**'
+      - '.github/workflows/desktop-build.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'shared/**'
+      - 'desktopApp/**'
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    name: Build for Linux
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build Desktop app for Linux
+        run: ./gradlew :desktopApp:packageDeb --stacktrace
+
+      - name: Upload Linux package
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-linux
+          path: desktopApp/build/compose/binaries/main/deb/*.deb
+          retention-days: 14
+
+  build-windows:
+    name: Build for Windows
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Build Desktop app for Windows
+        run: ./gradlew :desktopApp:packageMsi --stacktrace
+
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-windows
+          path: desktopApp/build/compose/binaries/main/msi/*.msi
+          retention-days: 14
+
+  build-macos:
+    name: Build for macOS
+    runs-on: macos-14
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build Desktop app for macOS
+        run: ./gradlew :desktopApp:packageDmg --stacktrace
+
+      - name: Upload macOS package
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-macos
+          path: desktopApp/build/compose/binaries/main/dmg/*.dmg
+          retention-days: 14
