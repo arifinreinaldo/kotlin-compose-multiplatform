@@ -139,6 +139,7 @@ Open the project in Xcode and run, or use:
 
 ## 🔧 Technologies & Libraries
 
+### Core
 | Technology | Purpose |
 |------------|---------|
 | **Kotlin 1.9.21** | Programming language |
@@ -148,6 +149,23 @@ Open the project in Xcode and run, or use:
 | **Coroutines 1.7.3** | Asynchronous programming |
 | **Flow** | Reactive streams |
 | **Material 3** | UI components and theming |
+
+### Extension Points (Included)
+| Technology | Purpose | Status |
+|------------|---------|--------|
+| **Ktor 2.3.7** | HTTP client for networking | ✅ Configured |
+| **Kotlinx Serialization 1.6.2** | JSON parsing | ✅ Configured |
+| **Voyager 1.0.0** | Type-safe navigation | ✅ Configured |
+| **Kotlinx DateTime 0.5.0** | Date/time utilities | ✅ Configured |
+
+### Testing
+| Technology | Purpose |
+|------------|---------|
+| **Kotlin Test** | Unit testing framework |
+| **Coroutines Test** | Async testing |
+| **Turbine** | Flow testing |
+| **MockK** | Mocking library |
+| **JUnit** | Test runner |
 
 ## 📝 Example Implementation
 
@@ -169,19 +187,62 @@ The architecture is designed for easy testing:
 
 ## 🔄 Extending the Boilerplate
 
-### Adding Network Layer
+### Quick Start Extensions
 
-1. Add Ktor dependencies in `shared/build.gradle.kts`
-2. Create `data/remote/` package for API services
-3. Update repositories to fetch from both local and remote sources
-4. Implement caching strategy (local DB as cache)
+All extension points are **already configured** and ready to use:
 
-### Adding New Features
+#### 1. Add Network Layer (Ktor)
+```kotlin
+// Example API implementation included in:
+// shared/src/.../data/remote/api/TaskApi.kt
+
+// Just implement your API:
+class MyApiImpl(private val httpClient: HttpClient) : MyApi {
+    override suspend fun getData(): Result<Data> {
+        return try {
+            val response = httpClient.get("/api/data").body<Data>()
+            Result.success(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+}
+
+// Register in Koin:
+single { HttpClientFactory.create() }
+single<MyApi> { MyApiImpl(get()) }
+```
+
+#### 2. Add Navigation (Voyager)
+```kotlin
+// Replace App() with NavigationApp() in platform entry points:
+setContent {
+    NavigationApp()  // Navigation is ready!
+}
+
+// Create screens and navigate:
+class DetailScreenVoyager(val id: Long) : Screen {
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        DetailScreen(id, onBack = { navigator.pop() })
+    }
+}
+
+// Navigate:
+navigator.push(DetailScreenVoyager(123))
+```
+
+#### 3. Add New Features
+
+Follow the established pattern - see `docs/EXTENDING.md` for detailed guide:
 
 1. **Domain**: Define entity, repository interface, and use cases
-2. **Data**: Implement repository, create database schema
+2. **Data**: Implement repository, create database schema (SQLDelight)
 3. **Presentation**: Create ViewModel, UI state, and composables
 4. **DI**: Register dependencies in Koin modules
+
+Example structure for a "Notes" feature already provided in documentation!
 
 ## 📱 Dynamic UI Examples
 
@@ -234,11 +295,52 @@ This boilerplate is designed to be **easily optimized** later:
 - **Extensible UI**: Component-based design for reusability
 - **Database migrations**: SQLDelight supports schema versioning
 
-## 📚 Learn More
+## 📚 Documentation
+
+Comprehensive guides are available in the `docs/` directory:
+
+### Architecture & Design
+- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Complete architecture guide
+  - Layer responsibilities and dependencies
+  - Data flow patterns
+  - Dependency rules
+  - Common patterns and best practices
+
+### Extension Guides
+- **[EXTENDING.md](docs/EXTENDING.md)** - How to extend the boilerplate
+  - Adding new features step-by-step
+  - Adding network layer (Ktor)
+  - Adding authentication
+  - Adding offline sync
+  - Adding analytics
+  - Complete example: Notes feature
+
+### Testing
+- **[TESTING.md](docs/TESTING.md)** - Complete testing guide
+  - Testing strategy for each layer
+  - Testing tools and utilities
+  - Example tests for domain, data, and presentation layers
+  - Best practices and patterns
+  - CI/CD integration
+
+### Quick Reference
+
+| Topic | File Location | Description |
+|-------|---------------|-------------|
+| Network API | `data/remote/api/` | Ktor API interfaces and DTOs |
+| Navigation | `presentation/navigation/` | Voyager screens and extensions |
+| Testing Examples | `shared/src/commonTest/` | Unit tests for all layers |
+| Utilities | `presentation/ui/util/` | DateTime, String, ResourceState utils |
+| Domain Extensions | `domain/util/` | Result extensions |
+
+## 📚 External Resources
 
 - [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html)
 - [Compose Multiplatform](https://www.jetbrains.com/lp/compose-multiplatform/)
 - [SQLDelight](https://cashapp.github.io/sqldelight/)
+- [Ktor Client](https://ktor.io/docs/getting-started-ktor-client.html)
+- [Voyager Navigation](https://voyager.adriel.cafe/)
+- [Koin DI](https://insert-koin.io/)
 - [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 
 ## 📄 License
