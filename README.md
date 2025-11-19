@@ -81,7 +81,16 @@ This project follows **Clean Architecture** principles with clear separation of 
 ### ✅ Single Source of Truth (SQLite)
 - All data flows through the local SQLite database
 - Reactive updates using Kotlin Flow
-- No network layer in this boilerplate (easily extendable)
+- Offline-first architecture with automatic sync
+
+### ✅ Offline-First Architecture 🆕
+- **Works offline out of the box** - No network required
+- **Optimistic updates** - UI updates instantly, sync happens in background
+- **Automatic sync** - Queues operations when offline, syncs when connected
+- **Network monitoring** - Cross-platform connectivity detection
+- **Conflict resolution** - Smart strategies (LastWriteWins, Custom merge)
+- **Retry logic** - Exponential backoff for failed operations
+- **See [docs/OFFLINE_FIRST.md](docs/OFFLINE_FIRST.md)** for complete guide
 
 ### ✅ Dynamic Responsive UI
 - `WindowSizeClass` determines layout configuration
@@ -394,6 +403,14 @@ Comprehensive guides are available in the `docs/` directory:
   - Adding offline sync
   - Adding analytics
   - Complete example: Notes feature
+- **[OFFLINE_FIRST.md](docs/OFFLINE_FIRST.md)** - Offline-first architecture guide 🆕
+  - Network monitoring across platforms
+  - Sync manager and request queue
+  - Optimistic updates pattern
+  - Conflict resolution strategies
+  - Automatic background sync
+  - Complete usage examples
+  - Testing offline scenarios
 
 ### Testing & CI/CD
 - **[TESTING.md](docs/TESTING.md)** - Complete testing guide

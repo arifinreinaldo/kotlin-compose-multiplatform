@@ -1,12 +1,15 @@
 package com.example.kmpcleanarch.di
 
 import com.example.kmpcleanarch.data.local.DatabaseDriverFactory
+import com.example.kmpcleanarch.data.network.NetworkMonitor
+import com.example.kmpcleanarch.data.network.NetworkMonitorFactory
 import com.example.kmpcleanarch.data.remote.api.AiApi
 import com.example.kmpcleanarch.data.remote.HttpClientFactory
 import com.example.kmpcleanarch.data.repository.AiRepositoryImpl
 import com.example.kmpcleanarch.data.repository.AuthRepositoryImpl
 import com.example.kmpcleanarch.data.repository.TaskRepositoryImpl
 import com.example.kmpcleanarch.data.repository.UserRepositoryImpl
+import com.example.kmpcleanarch.data.sync.*
 import com.example.kmpcleanarch.database.AppDatabase
 import com.example.kmpcleanarch.domain.repository.AiRepository
 import com.example.kmpcleanarch.domain.repository.AuthRepository
@@ -18,6 +21,9 @@ import com.example.kmpcleanarch.presentation.viewmodel.LoginViewModel
 import com.example.kmpcleanarch.presentation.viewmodel.TaskViewModel
 import com.example.kmpcleanarch.presentation.viewmodel.UserFormViewModel
 import com.example.kmpcleanarch.presentation.viewmodel.UserListViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
@@ -80,6 +86,45 @@ val commonModule = module {
     factoryOf(::UserListViewModel)
     factoryOf(::UserFormViewModel)
     factoryOf(::AiChatViewModel)
+
+    // Offline-First & Sync Infrastructure
+    // Network Monitor (platform-specific via expect/actual)
+    single<NetworkMonitor> {
+        get<NetworkMonitorFactory>().create()
+    }
+
+    // Request Queue for offline operations
+    single { RequestQueue() }
+
+    // Conflict Resolver
+    single<ConflictResolver> { DefaultConflictResolver() }
+
+    // Sync Executor for Tasks
+    single<SyncExecutor> {
+        TaskSyncExecutor(
+            taskApi = get(),
+            json = kotlinx.serialization.json.Json {
+                ignoreUnknownKeys = true
+                isLenient = true
+            }
+        )
+    }
+
+    // Coroutine Scope for sync operations
+    single {
+        CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    }
+
+    // Sync Manager
+    single {
+        SyncManager(
+            networkMonitor = get(),
+            requestQueue = get(),
+            syncExecutor = get(),
+            conflictResolver = get(),
+            coroutineScope = get()
+        )
+    }
 }
 
 /**
