@@ -32,8 +32,8 @@ abstract class OfflineFirstRepository<T : Any>(
      * - Syncs immediately if online
      */
     protected suspend fun createOptimistically(
-        entity: T,
         entityId: String,
+        serializedEntity: String,
         localCreate: suspend () -> Result<Unit>,
         remoteCreate: suspend () -> Result<Unit>
     ): Result<Unit> {
@@ -49,12 +49,12 @@ abstract class OfflineFirstRepository<T : Any>(
             val remoteResult = remoteCreate()
             if (remoteResult.isFailure) {
                 // Remote failed, queue for later
-                queueOperation(SyncOperationType.CREATE, entityId, entity)
+                queueOperation(SyncOperationType.CREATE, entityId, serializedEntity)
             }
             Result.success(Unit) // Local success is what matters
         } else {
             // Queue for when network is available
-            queueOperation(SyncOperationType.CREATE, entityId, entity)
+            queueOperation(SyncOperationType.CREATE, entityId, serializedEntity)
             Result.success(Unit)
         }
     }
@@ -63,8 +63,8 @@ abstract class OfflineFirstRepository<T : Any>(
      * Update entity optimistically
      */
     protected suspend fun updateOptimistically(
-        entity: T,
         entityId: String,
+        serializedEntity: String,
         localUpdate: suspend () -> Result<Unit>,
         remoteUpdate: suspend () -> Result<Unit>
     ): Result<Unit> {
@@ -80,12 +80,12 @@ abstract class OfflineFirstRepository<T : Any>(
             val remoteResult = remoteUpdate()
             if (remoteResult.isFailure) {
                 // Remote failed, queue for later
-                queueOperation(SyncOperationType.UPDATE, entityId, entity)
+                queueOperation(SyncOperationType.UPDATE, entityId, serializedEntity)
             }
             Result.success(Unit)
         } else {
             // Queue for when network is available
-            queueOperation(SyncOperationType.UPDATE, entityId, entity)
+            queueOperation(SyncOperationType.UPDATE, entityId, serializedEntity)
             Result.success(Unit)
         }
     }
@@ -94,8 +94,8 @@ abstract class OfflineFirstRepository<T : Any>(
      * Delete entity optimistically
      */
     protected suspend fun deleteOptimistically(
-        entity: T,
         entityId: String,
+        serializedEntity: String,
         localDelete: suspend () -> Result<Unit>,
         remoteDelete: suspend () -> Result<Unit>
     ): Result<Unit> {
@@ -111,12 +111,12 @@ abstract class OfflineFirstRepository<T : Any>(
             val remoteResult = remoteDelete()
             if (remoteResult.isFailure) {
                 // Remote failed, queue for later
-                queueOperation(SyncOperationType.DELETE, entityId, entity)
+                queueOperation(SyncOperationType.DELETE, entityId, serializedEntity)
             }
             Result.success(Unit)
         } else {
             // Queue for when network is available
-            queueOperation(SyncOperationType.DELETE, entityId, entity)
+            queueOperation(SyncOperationType.DELETE, entityId, serializedEntity)
             Result.success(Unit)
         }
     }
@@ -153,15 +153,14 @@ abstract class OfflineFirstRepository<T : Any>(
     private fun queueOperation(
         type: SyncOperationType,
         entityId: String,
-        entity: T
+        serializedData: String
     ): Result<Unit> {
         return try {
-            val data = json.encodeToString(entity)
             requestQueue.enqueue(
                 type = type,
                 entityType = entityType,
                 entityId = entityId,
-                data = data
+                data = serializedData
             )
             Result.success(Unit)
         } catch (e: Exception) {

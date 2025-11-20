@@ -1,5 +1,6 @@
 package com.example.kmpcleanarch.data.sync
 
+import com.example.kmpcleanarch.data.mapper.toDto
 import com.example.kmpcleanarch.data.remote.api.TaskApi
 import com.example.kmpcleanarch.domain.model.Task
 import com.example.kmpcleanarch.domain.sync.PendingSyncOperation
@@ -37,17 +38,17 @@ class TaskSyncExecutor(
 
     private suspend fun handleCreate(operation: PendingSyncOperation): Result<Unit> {
         val task = json.decodeFromString<Task>(operation.data)
-        return taskApi.createTask(task)
+        val taskDto = task.toDto()
+        return taskApi.createTask(taskDto).map { Unit }
     }
 
     private suspend fun handleUpdate(operation: PendingSyncOperation): Result<Unit> {
         val task = json.decodeFromString<Task>(operation.data)
-        return taskApi.updateTask(task)
+        val taskDto = task.toDto()
+        return taskApi.updateTask(operation.entityId, taskDto).map { Unit }
     }
 
     private suspend fun handleDelete(operation: PendingSyncOperation): Result<Unit> {
-        val taskId = operation.entityId.toLongOrNull()
-            ?: return Result.failure(Exception("Invalid task ID: ${operation.entityId}"))
-        return taskApi.deleteTask(taskId)
+        return taskApi.deleteTask(operation.entityId)
     }
 }

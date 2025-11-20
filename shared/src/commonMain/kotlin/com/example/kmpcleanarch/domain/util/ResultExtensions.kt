@@ -28,7 +28,7 @@ inline fun <T> Result<T>.mapFailure(transform: (Throwable) -> Throwable): Result
 /**
  * Execute action if result is success
  */
-inline fun <T> Result<T>.onSuccessSuspend(action: suspend (T) -> Unit): Result<T> {
+inline fun <T> Result<T>.onSuccessSuspend(crossinline action: suspend (T) -> Unit): Result<T> {
     if (isSuccess) {
         kotlinx.coroutines.runBlocking {
             action(getOrThrow())
@@ -40,7 +40,7 @@ inline fun <T> Result<T>.onSuccessSuspend(action: suspend (T) -> Unit): Result<T
 /**
  * Execute action if result is failure
  */
-inline fun <T> Result<T>.onFailureSuspend(action: suspend (Throwable) -> Unit): Result<T> {
+inline fun <T> Result<T>.onFailureSuspend(crossinline action: suspend (Throwable) -> Unit): Result<T> {
     if (isFailure) {
         kotlinx.coroutines.runBlocking {
             action(exceptionOrNull()!!)

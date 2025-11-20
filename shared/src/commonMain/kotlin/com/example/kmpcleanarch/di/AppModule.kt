@@ -4,6 +4,8 @@ import com.example.kmpcleanarch.data.local.DatabaseDriverFactory
 import com.example.kmpcleanarch.data.network.NetworkMonitor
 import com.example.kmpcleanarch.data.network.NetworkMonitorFactory
 import com.example.kmpcleanarch.data.remote.api.AiApi
+import com.example.kmpcleanarch.data.remote.api.MockTaskApi
+import com.example.kmpcleanarch.data.remote.api.TaskApi
 import com.example.kmpcleanarch.data.remote.HttpClientFactory
 import com.example.kmpcleanarch.data.repository.AiRepositoryImpl
 import com.example.kmpcleanarch.data.repository.AuthRepositoryImpl
@@ -47,6 +49,11 @@ val commonModule = module {
             baseUrl = AiApi.OPENAI_BASE_URL,
             apiKey = "" // Set via AiChatViewModel.setApiKey()
         )
+    }
+
+    // Task API (Mock implementation - replace with real API when ready)
+    single<TaskApi> {
+        MockTaskApi()
     }
 
     // Database

@@ -168,6 +168,7 @@ fun UserListScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun UserListItem(
     user: User,

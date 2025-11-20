@@ -1,3 +1,5 @@
+import kotlin.Boolean;
+
 -- Task table schema
 CREATE TABLE IF NOT EXISTS TaskEntity (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

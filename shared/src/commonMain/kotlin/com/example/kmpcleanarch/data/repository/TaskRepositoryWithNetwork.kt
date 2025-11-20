@@ -72,7 +72,7 @@ class TaskRepositoryWithNetwork(
         localId
     }
 
-    override suspend fun updateTask(task: Task) = withContext(Dispatchers.Default) {
+    override suspend fun updateTask(task: Task): Unit = withContext(Dispatchers.Default) {
         // Update locally first
         baseRepository.updateTask(task)
 
@@ -85,7 +85,7 @@ class TaskRepositoryWithNetwork(
         }
     }
 
-    override suspend fun deleteTask(id: Long) = withContext(Dispatchers.Default) {
+    override suspend fun deleteTask(id: Long): Unit = withContext(Dispatchers.Default) {
         // Delete locally first
         baseRepository.deleteTask(id)
 

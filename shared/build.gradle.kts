@@ -17,6 +17,9 @@ kotlin {
 
     jvm("desktop")
 
+    // iOS targets disabled for Windows development
+    // Uncomment when building on macOS
+    /*
     listOf(
         iosX64(),
         iosArm64(),
@@ -27,6 +30,7 @@ kotlin {
             isStatic = true
         }
     }
+    */
 
     sourceSets {
         val commonMain by getting {
@@ -36,8 +40,8 @@ kotlin {
                 implementation(compose.foundation)
                 implementation(compose.material3)
                 implementation(compose.ui)
+                @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
-                implementation(compose.components.uiToolingPreview)
 
                 // Coroutines
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
@@ -98,6 +102,8 @@ kotlin {
             }
         }
 
+        // iOS source sets disabled for Windows development
+        /*
         val iosX64Main by getting
         val iosArm64Main by getting
         val iosSimulatorArm64Main by getting
@@ -111,6 +117,7 @@ kotlin {
                 implementation("io.ktor:ktor-client-darwin:2.3.7")
             }
         }
+        */
 
         val desktopMain by getting {
             dependencies {
